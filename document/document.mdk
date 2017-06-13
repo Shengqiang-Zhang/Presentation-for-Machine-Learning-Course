@@ -1,0 +1,286 @@
+[INCLUDE=presentation]
+Title         : Sberbank Russian Housing Market
+Sub Title     : ------Kaggle参赛经验分享
+Author        : 邱雷 53140306
+Author columns:1
+Author: 张盛强 53140320
+Author: 代明玉 53140305
+Author: 加永郎加 53140308
+Reveal Theme  : serif
+Beamer Theme  : singapore
+Package: [UTF8] ctex
+
+[TITLE]
+
+# Problem Description
+
+Sberbank, Russia’s oldest and largest bank, helps their customers by ** making predictions about realty prices ** so renters, developers, and lenders are more confident when they sign a lease or purchase a building.
+
+In this competition, Sberbank is challenging Kagglers to develop algorithms which use ** a broad spectrum of features ** to predict realty prices. Competitors will rely on a ** rich dataset that includes housing data and macroeconomic patterns**. 
+
+# What we did?
+
+*  {.fragment} 数据分析
+*  {.fragment} 数据处理
+*  {.fragment} 用xgboost训练数据
+
+# And our Result?
+~ Center
+
+我们的结果目前的排名为：
+~
+
+# How  we did?
+
+# About Data
+
+- data_dictionary.txt
+- macro.csv
+- train.csv
+- test.csv
+
+~ Begin Vertical
+
+## About "macro.csv" (1)
+```python
+print(macro.shape)
+print(macro.columns.values)
+```
+![捕获]
+
+[捕获]: images/-.PNG "捕获" { width:750pt; max-width:300% }
+
+
+## About "macro.csv"  (2)
+```python 
+print(macro.head())
+```
+![捕获2]
+
+[捕获2]: images/-2.PNG "捕获2" { width:750pt; max-width:300% }
+
+
+~ End Vertical
+
+
+~ Begin Vertical
+## About "train.csv"(1)
+```python
+  print(train.shape)
+  print(train.columns.values)
+  ```
+  
+![捕获3]
+
+## About "train.csv"(2)
+```python
+  print(train.head())
+  ```
+![捕获4]
+  
+## About "train.csv"(3)
+```python
+missingValueColumns = train.columns[train.isnull().any()].tolist()
+msno.bar(train[missingValueColumns],figsize=(20,8),color=(0.5, 0.5, 1),fontsize=12,\
+          labels=True)
+msno.matrix(train[missingValueColumns],width_ratios=(10,1),figsize=(20,8),color=\
+            (0.5, 0.5, 1),fontsize=12,sparkline=True,labels=True)
+```
+~ Center
+
+
+![3`FI(N~PDS2}9O)8ZRJC4OY]
+
+[3`FI(N~PDS2}9O)8ZRJC4OY]: images/3-FI(N-PDS2-9O)8ZRJC4OY.png "3`FI(N~PDS2}9O)8ZRJC4OY" { width:600pt; max-width:100% }
+
+~
+## About "train.csv"(4)
+
+
+![QQ图片20170613090738]
+
+[QQ图片20170613090738]: images/QQ-20170613090738.png "QQ图片20170613090738" { width:750pt; max-width:300% }
+
+~ End Vertical
+
+
+[捕获4]: images/-4.PNG "捕获4" { width:750pt; length:1000pt ; max-width:300% }
+
+[捕获3]: images/-3.PNG "捕获3" { width:750pt; max-width:300% }
+
+# Data Processing
+
+* 去除一些错误的数据
+* 增加一些有利的特征
+
+
+~ Begin Vertical
+
+## Remove Wrong Data
+* 房屋面积错误(1)
+```python
+    bad_index = train[train.life_sq > train.full_sq].index
+    train.ix[bad_index, "life_sq"] = np.NaN
+    equal_index = [601, 1896, 2791]
+    test.ix[equal_index, "life_sq"] = test.ix[equal_index, "full_sq"]
+    bad_index = test[test.life_sq > test.full_sq].index
+    test.ix[bad_index, "life_sq"] = np.NaN
+    bad_index = train[train.life_sq < 5].index
+    train.ix[bad_index, "life_sq"] = np.NaN
+    bad_index = test[test.life_sq < 5].index
+    test.ix[bad_index, "life_sq"] = np.NaN
+    bad_index = train[train.full_sq < 5].index
+    train.ix[bad_index, "full_sq"] = np.NaN
+    bad_index = test[test.full_sq < 5].index
+    test.ix[bad_index, "full_sq"] = np.NaN
+```
+
+## Remove Wrong Data
+* 房屋面积错误(2)
+```python
+bad_index = train[train.kitch_sq >= train.life_sq].index
+train.ix[bad_index, "kitch_sq"] = np.NaN
+bad_index = test[test.kitch_sq >= test.life_sq].index
+test.ix[bad_index, "kitch_sq"] = np.NaN
+bad_index = train[(train.kitch_sq == 0).values + (train.kitch_sq == 1).values].index
+train.ix[bad_index, "kitch_sq"] = np.NaN
+bad_index = test[(test.kitch_sq == 0).values + (test.kitch_sq == 1).values].index
+test.ix[bad_index, "kitch_sq"] = np.NaN
+bad_index = train[(train.full_sq > 210) & (train.life_sq / train.full_sq < 0.3)].index
+train.ix[bad_index, "full_sq"] = np.NaN
+bad_index = test[(test.full_sq > 150) & (test.life_sq / test.full_sq < 0.3)].index
+test.ix[bad_index, "full_sq"] = np.NaN
+bad_index = train[train.life_sq > 300].index
+train.ix[bad_index, ["life_sq", "full_sq"]] = np.NaN
+bad_index = test[test.life_sq > 200].index
+test.ix[bad_index, ["life_sq", "full_sq"]] = np.NaN
+  ```
+
+## Remove Wrong Data
+* 房屋建设年代错误
+```python
+    bad_index = train[train.build_year < 1500].index
+    train.ix[bad_index, "build_year"] = np.NaN
+    bad_index = test[test.build_year < 1500].index
+    test.ix[bad_index, "build_year"] = np.NaN
+    ```
+* 房间数量错误
+```python
+    bad_index = train[train.num_room == 0].index
+    train.ix[bad_index, "num_room"] = np.NaN
+    bad_index = test[test.num_room == 0].index
+    test.ix[bad_index, "num_room"] = np.NaN
+    bad_index = [10076, 11621, 17764, 19390, 24007, 26713, 29172]
+    train.ix[bad_index, "num_room"] = np.NaN
+    bad_index = [3174, 7313]
+    test.ix[bad_index, "num_room"] = np.NaN
+```
+
+## Remove Wrong Data
+* 楼层信息错误
+```python
+bad_index = train[(train.floor == 0).values * (train.max_floor == 0).values].index
+train.ix[bad_index, ["max_floor", "floor"]] = np.NaN
+bad_index = train[train.floor == 0].index
+train.ix[bad_index, "floor"] = np.NaN
+bad_index = train[train.max_floor == 0].index
+train.ix[bad_index, "max_floor"] = np.NaN
+bad_index = test[test.max_floor == 0].index
+test.ix[bad_index, "max_floor"] = np.NaN
+bad_index = train[train.floor > train.max_floor].index
+train.ix[bad_index, "max_floor"] = np.NaN
+bad_index = test[test.floor > test.max_floor].index
+test.ix[bad_index, "max_floor"] = np.NaN
+    ```
+~ End Vertical
+
+
+~ Begin Vertical
+
+## Add Features
+* Add month-year
+```python
+    month_year = (train.timestamp.dt.month + train.timestamp.dt.year * 100)
+    month_year_cnt_map = month_year.value_counts().to_dict()
+    train['month_year_cnt'] = month_year.map(month_year_cnt_map)
+
+    month_year = (test.timestamp.dt.month + test.timestamp.dt.year * 100)
+    month_year_cnt_map = month_year.value_counts().to_dict()
+    test['month_year_cnt'] = month_year.map(month_year_cnt_map)
+```
+
+* Add week-year count
+```python
+    week_year = (train.timestamp.dt.weekofyear + train.timestamp.dt.year * 100)
+    week_year_cnt_map = week_year.value_counts().to_dict()
+    train['week_year_cnt'] = week_year.map(week_year_cnt_map)
+
+    week_year = (test.timestamp.dt.weekofyear + test.timestamp.dt.year * 100)
+    week_year_cnt_map = week_year.value_counts().to_dict()
+    test['week_year_cnt'] = week_year.map(week_year_cnt_map)
+```
+
+## Add Features
+* Add month and day-of-week
+```python
+    train['month'] = train.timestamp.dt.month
+    train['dow'] = train.timestamp.dt.dayofweek
+
+    test['month'] = test.timestamp.dt.month
+    test['dow'] = test.timestamp.dt.dayofweek
+```
+~ End Vertical
+
+## Other Feature Engineering
+```python
+    train['rel_floor'] = train['floor'] / train['max_floor'].astype(float)
+    train['rel_kitch_sq'] = train['kitch_sq'] / train['full_sq'].astype(float)
+
+    test['rel_floor'] = test['floor'] / test['max_floor'].astype(float)
+    test['rel_kitch_sq'] = test['kitch_sq'] / test['full_sq'].astype(float)
+
+    train.apartment_name = train.sub_area + train['metro_km_avto'].astype(str)
+    test.apartment_name = test.sub_area + train['metro_km_avto'].astype(str)
+
+    train['room_size'] = train['life_sq'] / train['num_room'].astype(float)
+    test['room_size'] = test['life_sq'] / test['num_room'].astype(float)
+```
+
+
+# Train the model
+
+## Why xgboost？
+* xgboost是大规模并行boosted tree的工具，它是目前最快最好的开源boosted tree工具包
+* 由于其高效的C++实现，xgboost在性能上超过了最常用使用的R包gbm和Python包sklearn。
+* 在数据科学方面，有大量kaggle选手选用它进行数据挖掘比赛，其中包括两个以上kaggle比赛的夺冠方案。
+
+## Codes
+```python
+def xg(x_train, y_train, x_test):
+    xgb_params = {
+        'eta': 0.07,
+        'max_depth': 5,
+        'min_child_weight': 5,
+        'gamma': 0,
+        'max_delta_step': 0,
+        'subsample': 0.8,
+        'colsample_bytree': 0.7,
+        'objective': 'reg:linear',
+        'eval_metric': 'rmse',
+        'silent': 1
+    }
+
+    dtrain = xgb.DMatrix(x_train, y_train)
+    dtest = xgb.DMatrix(x_test)
+    model = xgb.train(dict(xgb_params, silent=0), dtrain, num_boost_round=350)
+    y_predict = model.predict(dtest)
+    y_predict = np.round(y_predict)
+    return y_predict
+  ```
+  
+
+# Thanks for looking :-)
+
+[slide]: http://research.microsoft.com/en-us/um/people/daan/madoko/samples/slidedemo/out/slidedemo.html
+[slide-mdk]: https://www.madoko.net/editor.html?#url=http://research.microsoft.com/en-us/um/people/daan/madoko/samples/slidedemo/slidedemo.mdk&options={"delayedUpdate":"true"}
+[slide-pdf]: http://research.microsoft.com/en-us/um/people/daan/madoko/samples/slidedemo/out/slidedemo.pdf
