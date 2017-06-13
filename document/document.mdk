@@ -24,12 +24,6 @@ In this competition, Sberbank is challenging Kagglers to develop algorithms whic
 *  {.fragment} 数据处理
 *  {.fragment} 用xgboost训练数据
 
-# And our Result?
-~ Center
-
-我们的结果目前的排名为：
-~
-
 # How  we did?
 
 # About Data
@@ -253,6 +247,7 @@ test.ix[bad_index, "max_floor"] = np.NaN
 * xgboost是大规模并行boosted tree的工具，它是目前最快最好的开源boosted tree工具包
 * 由于其高效的C++实现，xgboost在性能上超过了最常用使用的R包gbm和Python包sklearn。
 * 在数据科学方面，有大量kaggle选手选用它进行数据挖掘比赛，其中包括两个以上kaggle比赛的夺冠方案。
+* 自带处理空数据
 
 ## Codes
 ```python
@@ -279,7 +274,15 @@ def xg(x_train, y_train, x_test):
   ```
   
 
+# And Our Result?
+~ Center
+我们的结果目前在所有参赛队伍中排名为**513**/2922.
+
+![BB[Z_2E4]QT({~KK)18SF%6]
+~
 # Thanks for looking :-)
+
+[BB[Z_2E4]QT({~KK)18SF%6]: images/BB-Z_2E4-QT(-KK)18SF%6.png "BB[Z_2E4]QT({~KK)18SF%6" { width:750pt; max-width:300% }
 
 [slide]: http://research.microsoft.com/en-us/um/people/daan/madoko/samples/slidedemo/out/slidedemo.html
 [slide-mdk]: https://www.madoko.net/editor.html?#url=http://research.microsoft.com/en-us/um/people/daan/madoko/samples/slidedemo/slidedemo.mdk&options={"delayedUpdate":"true"}
